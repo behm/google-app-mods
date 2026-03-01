@@ -1,0 +1,21 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.2">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>6416bfc2-1a78-4ca2-8bd2-d0e6cfc845b9</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GoogleAppMods.GmailSweeper\GoogleAppMods.GmailSweeper.csproj" />
+    <ProjectReference Include="..\GoogleAppMods.Server\GoogleAppMods.Server.csproj" />
+    <ProjectReference Include="..\GoogleAppMods.YouTubeWatchTheseCleanup\GoogleAppMods.YouTubeWatchTheseCleanup.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.1.2" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="13.1.2" />
+  </ItemGroup>
+</Project>
