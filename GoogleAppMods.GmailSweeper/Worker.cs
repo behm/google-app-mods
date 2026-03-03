@@ -11,7 +11,16 @@ public class Worker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var schedule = CronExpression.Parse(sweeperOptions.Value.Schedule);
+        CronExpression schedule;
+        try
+        {
+            schedule = CronExpression.Parse(sweeperOptions.Value.Schedule);
+        }
+        catch (CronFormatException ex)
+        {
+            logger.LogError(ex, "Invalid cron schedule configured for GmailSweeper: {Schedule}. Worker will stop.", sweeperOptions.Value.Schedule);
+            return;
+        }
 
         logger.LogInformation("GmailSweeper started with schedule: {Schedule}", sweeperOptions.Value.Schedule);
 
