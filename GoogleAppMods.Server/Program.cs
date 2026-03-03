@@ -1,9 +1,27 @@
+using GoogleAppMods.Google;
+using GoogleAppMods.Server;
+using Microsoft.AspNetCore.HttpOverrides;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+
+builder.Services.Configure<GoogleProjectOptions>(
+    builder.Configuration.GetSection(GoogleProjectOptions.SectionName));
 builder.AddRedisClientBuilder("cache")
     .WithOutputCache();
+
+// Process X-Forwarded-* headers from the Aspire DCP proxy so the server
+// sees the external scheme, host, and port (needed for OAuth redirect URIs).
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                             | ForwardedHeaders.XForwardedProto
+                             | ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -14,6 +32,7 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
@@ -40,6 +59,8 @@ api.MapGet("weatherforecast", () =>
 })
 .CacheOutput(p => p.Expire(TimeSpan.FromSeconds(5)))
 .WithName("GetWeatherForecast");
+
+app.MapGoogleAuthEndpoints();
 
 app.MapDefaultEndpoints();
 

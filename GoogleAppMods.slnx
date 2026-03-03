@@ -4,6 +4,7 @@
   </Project>
   <Project Path="GoogleAppMods.AppHost/GoogleAppMods.AppHost.csproj" />
   <Project Path="GoogleAppMods.GmailSweeper/GoogleAppMods.GmailSweeper.csproj" />
+  <Project Path="GoogleAppMods.Google/GoogleAppMods.Google.csproj" />
   <Project Path="GoogleAppMods.Server/GoogleAppMods.Server.csproj" />
   <Project Path="GoogleAppMods.YouTubeWatchTheseCleanup/GoogleAppMods.YouTubeWatchTheseCleanup.csproj" />
 </Solution>

@@ -1,12 +1,13 @@
 using Google.Apis.Gmail.v1;
 using Google.Apis.Gmail.v1.Data;
 using Google.Apis.Services;
+using GoogleAppMods.Google;
 using Microsoft.Extensions.Options;
 
 namespace GoogleAppMods.GmailSweeper;
 
 public class GmailArchiveService(
-    GmailAuthService authService,
+    GoogleTokenProvider tokenProvider,
     IOptions<GmailSweeperOptions> sweeperOptions,
     ILogger<GmailArchiveService> logger)
 {
@@ -23,7 +24,7 @@ public class GmailArchiveService(
             return;
         }
 
-        var credential = await authService.AuthorizeAsync(cancellationToken);
+        var credential = await tokenProvider.GetCredentialAsync(cancellationToken);
 
         using var gmailService = new GmailService(new BaseClientService.Initializer
         {
