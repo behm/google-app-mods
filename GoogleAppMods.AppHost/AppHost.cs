@@ -17,6 +17,7 @@ var server = builder.AddProject<Projects.GoogleAppMods_Server>("server")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
     .WithHttpsEndpoint(port: 7542, name: "google-oauth")
+    .WithUrlForEndpoint("google-oauth", ep => new() { Url = "/api/auth/google/authorize", DisplayText = "Authorize" })
     .WithGoogleProjectConfig(googleProjectSection);
 
 var webfrontend = builder.AddViteApp("webfrontend", "../frontend")
