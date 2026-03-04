@@ -1,4 +1,5 @@
 using Cronos;
+
 using Microsoft.Extensions.Options;
 
 namespace GoogleAppMods.GmailSweeper;
@@ -27,23 +28,25 @@ public class Worker(
         while (!stoppingToken.IsCancellationRequested)
         {
             var utcNow = timeProvider.GetUtcNow();
-            var nextOccurrence = schedule.GetNextOccurrence(utcNow.UtcDateTime);
+            var nextOccurrenceUtc = schedule.GetNextOccurrence(utcNow.UtcDateTime);
 
-            if (nextOccurrence is null)
+            if (nextOccurrenceUtc is null)
             {
                 logger.LogWarning("No next occurrence found for schedule: {Schedule}. Stopping.", sweeperOptions.Value.Schedule);
                 break;
             }
 
-            var delay = nextOccurrence.Value - utcNow;
-            logger.LogInformation("Next sweep scheduled at {NextRun} UTC (in {Delay})", nextOccurrence.Value, delay);
+            var delay = nextOccurrenceUtc.Value - utcNow.UtcDateTime;
+            logger.LogInformation("Next sweep scheduled at {NextRun} UTC (in {Delay})", nextOccurrenceUtc.Value, delay);
 
             await Task.Delay(delay, timeProvider, stoppingToken);
 
             try
             {
                 logger.LogInformation("GmailSweeper running scheduled sweep");
+
                 await archiveService.RunAllQueriesAsync(stoppingToken);
+
                 logger.LogInformation("GmailSweeper sweep completed successfully");
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
