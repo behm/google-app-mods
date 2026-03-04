@@ -5,8 +5,10 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.Configure<GoogleProjectOptions>(
     builder.Configuration.GetSection(GoogleProjectOptions.SectionName));
-builder.Services.Configure<GmailSweeperOptions>(
-    builder.Configuration.GetSection(GmailSweeperOptions.SectionName));
+builder.Services.AddOptions<GmailSweeperOptions>()
+    .BindConfiguration(GmailSweeperOptions.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<GoogleTokenProvider>();
