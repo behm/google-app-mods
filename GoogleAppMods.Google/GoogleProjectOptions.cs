@@ -1,4 +1,4 @@
-namespace GoogleAppMods.GmailSweeper;
+namespace GoogleAppMods.Google;
 
 public class GoogleProjectOptions
 {

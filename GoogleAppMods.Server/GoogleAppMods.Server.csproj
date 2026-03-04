@@ -17,4 +17,8 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GoogleAppMods.Google\GoogleAppMods.Google.csproj" />
+  </ItemGroup>
 </Project>

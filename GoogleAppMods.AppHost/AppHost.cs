@@ -7,6 +7,8 @@ var googleProjectSection = builder.Configuration.GetSection("GoogleProject");
 if (!googleProjectSection.GetChildren().Any())
     throw new InvalidOperationException("GoogleProject configuration section is not configured.");
 
+var gmailSweeperSection = builder.Configuration.GetSection("GmailSweeper");
+
 var cache = builder.AddRedis("cache");
 
 var server = builder.AddProject<Projects.GoogleAppMods_Server>("server")
@@ -14,6 +16,7 @@ var server = builder.AddProject<Projects.GoogleAppMods_Server>("server")
     .WaitFor(cache)
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
+    .WithHttpsEndpoint(port: 7542, name: "google-oauth")
     .WithGoogleProjectConfig(googleProjectSection);
 
 var webfrontend = builder.AddViteApp("webfrontend", "../frontend")
@@ -23,7 +26,8 @@ var webfrontend = builder.AddViteApp("webfrontend", "../frontend")
 server.PublishWithContainerFiles(webfrontend, "wwwroot");
 
 builder.AddProject<Projects.GoogleAppMods_GmailSweeper>("googleappmods-gmailsweeper")
-    .WithGoogleProjectConfig(googleProjectSection);
+    .WithGoogleProjectConfig(googleProjectSection)
+    .WithGmailSweeperConfig(gmailSweeperSection);
 
 builder.AddProject<Projects.GoogleAppMods_YouTubeWatchTheseCleanup>("googleappmods-youtubewatchthesecleanup")
     .WithGoogleProjectConfig(googleProjectSection);
