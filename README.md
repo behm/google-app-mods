@@ -8,26 +8,28 @@ A .NET 10 [Aspire](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-
 ┌─────────────────────────────────────────────────────────────────┐
 │                    GoogleAppMods.AppHost                        │
 │              (Aspire orchestrator — wires everything)           │
-└────┬──────────────┬──────────────┬──────────────┬──────────────┘
+└────┬──────────────┬──────────────┬──────────────┬───────────────┘
      │              │              │              │
      ▼              ▼              ▼              ▼
 ┌─────────┐  ┌───────────┐  ┌───────────┐  ┌────────────────────┐
-│  Redis   │  │  Server   │  │  Gmail    │  │  YouTube           │
-│  (cache) │  │  (API +   │  │  Sweeper  │  │  WatchThese        │
-│          │  │   Auth)   │  │  (Worker) │  │  Cleanup (Worker)  │
-└─────────┘  └─────┬─────┘  └─────┬─────┘  └────────┬───────────┘
+│  Redis  │  │  Server   │  │  Gmail    │  │  YouTube           │
+│  (cache)│  │  (API +   │  │  Sweeper  │  │  WatchThese        │
+│         │  │   Auth)   │  │  (Worker) │  │  Cleanup (Worker)  │
+└─────────┘  └─────┬─────┘  └─────┬─────┘  └─────────┬──────────┘
                    │              │                  │
                    │         ┌────▼──────────────────▼───┐
-                   │         │   GoogleAppMods.Google     │
-                   └────────►│   (shared library)         │
-                             │   • GoogleTokenProvider    │
-                             │   • GoogleScopes           │
-                             │   • GoogleProjectOptions   │
+                   │         │   GoogleAppMods.Google    │
+                   └────────►│   (shared library)        │
+                             │   • GoogleTokenProvider   │
+                             │   • GoogleScopes          │
+                             │   • GoogleProjectOptions  │
                              └──────────┬────────────────┘
                                         │
                                         ▼
                               Shared token store (disk)
 ```
+
+[Google Authorization Documentation](docs/auth.md)
 
 ## Projects
 
