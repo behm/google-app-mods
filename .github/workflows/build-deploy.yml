@@ -1,0 +1,88 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service:
+          - name: server
+            dockerfile: GoogleAppMods.Server/Dockerfile
+            image-suffix: server
+          - name: gmail-sweeper
+            dockerfile: GoogleAppMods.GmailSweeper/Dockerfile
+            image-suffix: gmail-sweeper
+          - name: youtube-cleanup
+            dockerfile: GoogleAppMods.YouTubeWatchTheseCleanup/Dockerfile
+            image-suffix: youtube-cleanup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.image-suffix }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.service.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  build-success:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: success()
+    steps:
+      - name: Build Success
+        run: |
+          echo "All container images built and pushed successfully!"
+          echo "Images available at:"
+          echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-server"
+          echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-gmail-sweeper"
+          echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-youtube-cleanup"

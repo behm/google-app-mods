@@ -149,6 +149,17 @@ dotnet run
 
 Open the Aspire dashboard (printed in the console output), navigate to the Server's URL, then visit `/api/auth/google/authorize` to complete the one-time Google OAuth2 consent. After that, all worker services can access Google APIs automatically.
 
+## Deployment
+
+For production deployment using Docker containers on Synology NAS or other Docker hosts, see the [Deployment Guide](docs/deployment.md).
+
+The application can be deployed as Docker containers with automated builds via GitHub Actions:
+- **GitHub Container Registry**: Automatic image builds and publishing
+- **Docker Compose**: Simple deployment configuration for Synology Container Manager
+- **Multi-platform**: Supports both AMD64 and ARM64 architectures
+
+See [docs/deployment.md](docs/deployment.md) for complete deployment instructions.
+
 ## Adding a New Google Service
 
 1. **Add the scope** to `GoogleAppMods.Google\GoogleScopes.cs`:
