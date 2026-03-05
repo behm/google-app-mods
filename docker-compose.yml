@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: google-app-mods-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - google-app-mods
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    image: ghcr.io/behm/google-app-mods-server:latest
+    container_name: google-app-mods-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__cache=redis:6379
+      - GoogleProject__ClientId=${GOOGLE_CLIENT_ID}
+      - GoogleProject__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      - GoogleProject__TokenStorePath=/app/tokens
+    volumes:
+      - google-tokens:/app/tokens
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - google-app-mods
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  gmail-sweeper:
+    image: ghcr.io/behm/google-app-mods-gmail-sweeper:latest
+    container_name: google-app-mods-gmail-sweeper
+    restart: unless-stopped
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - GoogleProject__ClientId=${GOOGLE_CLIENT_ID}
+      - GoogleProject__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      - GoogleProject__TokenStorePath=/app/tokens
+      - GmailSweeper__Schedule=${GMAIL_SWEEPER_SCHEDULE:-0 12 * * *}
+      - GmailSweeper__Queries__0=${GMAIL_SWEEPER_QUERY:-in:inbox category:promotions -is:pinned -is:starred older_than:14d}
+      - GmailSweeper__BatchSize=${GMAIL_SWEEPER_BATCH_SIZE:-100}
+    volumes:
+      - google-tokens:/app/tokens
+    depends_on:
+      - server
+    networks:
+      - google-app-mods
+
+  youtube-cleanup:
+    image: ghcr.io/behm/google-app-mods-youtube-cleanup:latest
+    container_name: google-app-mods-youtube-cleanup
+    restart: unless-stopped
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - GoogleProject__ClientId=${GOOGLE_CLIENT_ID}
+      - GoogleProject__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      - GoogleProject__TokenStorePath=/app/tokens
+    volumes:
+      - google-tokens:/app/tokens
+    depends_on:
+      - server
+    networks:
+      - google-app-mods
+
+networks:
+  google-app-mods:
+    driver: bridge
+
+volumes:
+  redis-data:
+  google-tokens:
